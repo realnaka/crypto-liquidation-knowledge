@@ -1,0 +1,2297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="用一条清晰的资金瀑布，理解数字货币合约中的强平、穿仓、保险基金与 ADL，并以币安公开规则为核验样本。">
+  <title>数字货币清算知识图谱 | 清算研究</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #111111;
+      --panel-2: #151515;
+      --panel-3: #1b1b1b;
+      --line: #1f1f1f;
+      --line-strong: #2b2b2b;
+      --text: #ffffff;
+      --muted: #999999;
+      --soft: #666666;
+      --dim: #3f3f3f;
+      --green: #4ade80;
+      --green-soft: rgba(74, 222, 128, 0.1);
+      --red: #ff5555;
+      --red-soft: rgba(255, 85, 85, 0.1);
+      --orange: #ff9500;
+      --orange-soft: rgba(255, 149, 0, 0.1);
+      --blue: #7aa7ff;
+      --blue-soft: rgba(122, 167, 255, 0.1);
+      --radius: 18px;
+      --max: 1240px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 112px;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 78% 4%, rgba(255, 255, 255, 0.045), transparent 26rem),
+        var(--bg);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    ::selection {
+      color: #0a0a0a;
+      background: #ffffff;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: 12px;
+      left: 12px;
+      padding: 8px 12px;
+      color: #0a0a0a;
+      background: #ffffff;
+      border-radius: 8px;
+      transform: translateY(-160%);
+      transition: transform 160ms ease;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .site-header {
+      position: relative;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 10, 10, 0.94);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar,
+    .section-nav-inner,
+    main,
+    .site-footer-inner {
+      width: min(calc(100% - 48px), var(--max));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: max-content;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 14px solid #ffffff;
+      transform: rotate(30deg);
+    }
+
+    .brand-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--line-strong);
+    }
+
+    .brand-context {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .verified-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 4px 12px;
+      color: var(--muted);
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .verified-pill::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 999px;
+    }
+
+    .section-nav {
+      position: sticky;
+      z-index: 18;
+      top: 0;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 10, 10, 0.94);
+      backdrop-filter: blur(18px);
+    }
+
+    .section-nav-inner {
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .section-nav-inner::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+      margin-right: 28px;
+      padding: 0 2px;
+      color: var(--soft);
+      border-bottom: 2px solid transparent;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color 160ms ease, border-color 160ms ease;
+    }
+
+    .section-nav a:hover,
+    .section-nav a:focus-visible,
+    .section-nav a.active {
+      color: #ffffff;
+      border-bottom-color: #ffffff;
+      outline: none;
+    }
+
+    main {
+      padding: 48px 0 80px;
+    }
+
+    section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-of-type {
+      border-bottom: 0;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 1px;
+      background: var(--soft);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+      letter-spacing: -0.035em;
+    }
+
+    h1 {
+      max-width: 720px;
+      margin-bottom: 20px;
+      font-size: clamp(30px, 4.2vw, 54px);
+      line-height: 1.08;
+    }
+
+    h1 span {
+      color: var(--muted);
+    }
+
+    h2 {
+      max-width: 760px;
+      margin-bottom: 12px;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.16;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .lede {
+      max-width: 700px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .hero {
+      padding-top: 14px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
+      gap: 56px;
+      align-items: center;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 28px;
+      padding: 4px 10px;
+      color: var(--muted);
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .chip strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero-card {
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: 24px;
+      background: linear-gradient(145deg, #131313 0%, #0e0e0e 70%);
+    }
+
+    .sim-head {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sim-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .sim-loss {
+      color: var(--text);
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+    }
+
+    .sim-loss small {
+      margin-left: 4px;
+      color: var(--soft);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .range-wrap {
+      padding-top: 4px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 24px;
+      margin: 0;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 2px;
+      background: linear-gradient(90deg, #ffffff 0%, #ffffff var(--range-progress, 65%), #333333 var(--range-progress, 65%), #333333 100%);
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 2px;
+      background: #333333;
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 2px;
+      background: #ffffff;
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      margin-top: -7px;
+      appearance: none;
+      background: #ffffff;
+      border: 3px solid #0e0e0e;
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px #ffffff;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: #ffffff;
+      border: 3px solid #0e0e0e;
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px #ffffff;
+    }
+
+    .preset-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .preset {
+      min-height: 34px;
+      padding: 6px 8px;
+      color: var(--muted);
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: transparent;
+      font-size: 11px;
+      cursor: pointer;
+      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .preset:hover,
+    .preset:focus-visible,
+    .preset.active {
+      color: var(--text);
+      border-color: #555555;
+      background: #1a1a1a;
+      outline: none;
+    }
+
+    .sim-body {
+      padding: 22px 24px 24px;
+    }
+
+    .stage-kicker {
+      margin-bottom: 6px;
+      color: var(--soft);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .stage-title {
+      margin-bottom: 6px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+
+    .stage-copy {
+      min-height: 48px;
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .split-bars {
+      display: grid;
+      gap: 12px;
+    }
+
+    .split-row {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr) 52px;
+      gap: 12px;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .split-row span:first-child {
+      color: var(--muted);
+    }
+
+    .split-track {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #242424;
+    }
+
+    .split-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      transition: width 220ms ease;
+    }
+
+    .split-row.client .split-fill {
+      background: #ffffff;
+    }
+
+    .split-row.fund .split-fill {
+      background: var(--orange);
+    }
+
+    .split-row.adl .split-fill {
+      background: var(--red);
+    }
+
+    .split-value {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .fact-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 56px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .fact {
+      min-height: 118px;
+      padding: 24px;
+      border-right: 1px solid var(--line);
+    }
+
+    .fact:first-child {
+      padding-left: 0;
+    }
+
+    .fact:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+
+    .fact strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .fact p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 32px;
+      margin-bottom: 32px;
+    }
+
+    .section-head p {
+      max-width: 520px;
+      margin-bottom: 2px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .definition-grid {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 16px;
+    }
+
+    .definition-card,
+    .panel,
+    .source-card {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .definition-card {
+      padding: 26px;
+    }
+
+    .definition-card p {
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .term-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .term {
+      min-height: 132px;
+      padding: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .term:nth-child(odd) {
+      border-right: 1px solid var(--line);
+    }
+
+    .term:nth-last-child(-n + 2) {
+      border-bottom: 0;
+    }
+
+    .term-index {
+      display: block;
+      margin-bottom: 18px;
+      color: var(--soft);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+    }
+
+    .term strong {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .term p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .callout {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+      padding: 20px 22px;
+      border: 1px solid rgba(255, 149, 0, 0.28);
+      border-radius: 14px;
+      background: var(--orange-soft);
+    }
+
+    .callout-mark {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      color: var(--orange);
+      border: 1px solid rgba(255, 149, 0, 0.5);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .callout p {
+      margin: 0;
+      color: #c9c9c9;
+      font-size: 12px;
+      line-height: 1.75;
+    }
+
+    .binance-grid {
+      display: grid;
+      grid-template-columns: 0.93fr 1.07fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .panel {
+      padding: 26px;
+    }
+
+    .panel-label {
+      margin-bottom: 20px;
+      color: var(--soft);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .formula {
+      margin-top: 20px;
+      padding: 16px;
+      color: #dedede;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0d0d0d;
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .formula code {
+      color: #ffffff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .formula strong {
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 18px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .detail-list li {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .detail-list b {
+      display: grid;
+      place-items: center;
+      align-self: start;
+      width: 24px;
+      height: 24px;
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .detail-list span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.75;
+    }
+
+    .detail-list strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .small-link {
+      color: #ffffff;
+      border-bottom: 1px solid #555555;
+    }
+
+    .small-link:hover,
+    .small-link:focus-visible {
+      border-bottom-color: #ffffff;
+      outline: none;
+    }
+
+    .process-band {
+      margin-top: 16px;
+      padding: 24px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .process-band-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .process-band-head strong {
+      font-weight: 600;
+    }
+
+    .source-tag {
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .micro-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .micro-step {
+      position: relative;
+      min-height: 132px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0d0d0d;
+    }
+
+    .micro-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      right: -11px;
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      color: var(--soft);
+      background: var(--panel);
+      transform: translateY(-50%);
+    }
+
+    .micro-step.focal {
+      border-color: rgba(255, 149, 0, 0.45);
+      background: var(--orange-soft);
+    }
+
+    .micro-step em {
+      display: block;
+      margin-bottom: 20px;
+      color: var(--soft);
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .micro-step strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .micro-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th,
+    td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: #cccccc;
+      line-height: 1.7;
+    }
+
+    td:first-child {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 24px;
+      padding: 2px 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .status.ok::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      background: var(--green);
+      border-radius: 999px;
+    }
+
+    .status.nuance::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      background: var(--orange);
+      border-radius: 999px;
+    }
+
+    .status.unknown::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      background: var(--blue);
+      border-radius: 999px;
+    }
+
+    .fund-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 16px;
+    }
+
+    .fund-intro {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100%;
+    }
+
+    .fund-number {
+      margin: 6px 0 22px;
+      color: var(--text);
+      font-size: 56px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -0.06em;
+    }
+
+    .fund-number small {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    .fund-link {
+      display: inline-flex;
+      align-items: center;
+      align-self: flex-start;
+      gap: 8px;
+      min-height: 40px;
+      padding: 8px 14px;
+      color: #0a0a0a;
+      border-radius: 12px;
+      background: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .fund-link:hover,
+    .fund-link:focus-visible {
+      background: #dedede;
+      outline: none;
+    }
+
+    .fund-map {
+      display: grid;
+      gap: 12px;
+    }
+
+    .fund-family {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #0d0d0d;
+    }
+
+    .fund-family-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .fund-family-head strong {
+      font-weight: 600;
+    }
+
+    .fund-family-head span {
+      color: var(--soft);
+      font-size: 10px;
+    }
+
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pool span {
+      padding: 4px 8px;
+      color: var(--muted);
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #141414;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .pool span.focus {
+      color: var(--text);
+      border-color: #555555;
+    }
+
+    .adl-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .adl-formulas {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .formula-row {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0d0d0d;
+    }
+
+    .formula-row b {
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .formula-row code {
+      color: #d7d7d7;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .adl-result {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .quantile {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 22px 0 8px;
+    }
+
+    .quantile span {
+      height: 8px;
+      border-radius: 999px;
+      background: #292929;
+    }
+
+    .quantile span.on {
+      background: var(--red);
+    }
+
+    .quantile-labels {
+      display: flex;
+      justify-content: space-between;
+      color: var(--soft);
+      font-size: 9px;
+    }
+
+    .adl-explain {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .adl-explain p {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .adl-explain p:last-child {
+      margin-bottom: 0;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 0.82fr 1.18fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .spot-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 360px;
+      padding: 26px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.04), transparent 45%),
+        var(--panel);
+    }
+
+    .spot-card::after {
+      content: "SPOT";
+      position: absolute;
+      right: -10px;
+      bottom: -36px;
+      color: rgba(255, 255, 255, 0.035);
+      font-size: 112px;
+      font-weight: 700;
+      letter-spacing: -0.08em;
+      pointer-events: none;
+    }
+
+    .spot-card p {
+      position: relative;
+      z-index: 1;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .spot-rule {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .spot-rule div {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(10, 10, 10, 0.72);
+    }
+
+    .spot-rule strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .spot-rule span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .compare-table {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .compare-row {
+      display: grid;
+      grid-template-columns: 0.72fr 1fr 1fr;
+      min-height: 76px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .compare-row:last-child {
+      border-bottom: 0;
+    }
+
+    .compare-row > div {
+      padding: 17px 16px;
+      border-right: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .compare-row > div:last-child {
+      border-right: 0;
+    }
+
+    .compare-row.header > div {
+      color: var(--soft);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .compare-row > div:first-child {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .diagram-frame {
+      overflow-x: auto;
+      padding: 26px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .diagram-frame svg {
+      display: block;
+      width: 100%;
+      min-width: 900px;
+      height: auto;
+    }
+
+    .diagram-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 16px;
+      color: var(--soft);
+      font-size: 10px;
+    }
+
+    .myth-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .myth {
+      min-height: 174px;
+      padding: 20px;
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .myth-label {
+      display: inline-flex;
+      margin-bottom: 20px;
+      padding: 3px 8px;
+      color: var(--muted);
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      font-size: 9px;
+    }
+
+    .myth h3 {
+      font-size: 14px;
+    }
+
+    .myth p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .source-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 190px;
+      padding: 22px;
+      transition: border-color 160ms ease, background 160ms ease;
+    }
+
+    .source-card:hover,
+    .source-card:focus-visible {
+      border-color: #555555;
+      background: var(--panel-2);
+      outline: none;
+    }
+
+    .source-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--soft);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .source-card h3 {
+      margin: 18px 0 8px;
+      font-size: 15px;
+    }
+
+    .source-card p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.65;
+    }
+
+    .source-link-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: #ffffff;
+      font-size: 11px;
+    }
+
+    .source-link-line span:last-child {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .footnote {
+      margin-top: 16px;
+      padding: 18px 20px;
+      color: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--line);
+      background: #080808;
+    }
+
+    .site-footer-inner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 32px;
+      padding-top: 28px;
+      padding-bottom: 34px;
+      color: var(--soft);
+      font-size: 10px;
+    }
+
+    .site-footer-inner p {
+      max-width: 720px;
+      margin: 0;
+      line-height: 1.75;
+    }
+
+    .footer-mark {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .footer-mark .brand-mark {
+      border-bottom-width: 10px;
+      border-left-width: 6px;
+      border-right-width: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .binance-grid,
+      .fund-grid,
+      .adl-grid,
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-grid {
+        gap: 32px;
+      }
+
+      .definition-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .micro-flow {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .micro-step:nth-child(2)::after {
+        display: none;
+      }
+
+      .fact {
+        padding: 20px;
+      }
+
+      .fact:first-child,
+      .fact:last-child {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar,
+      .section-nav-inner,
+      main,
+      .site-footer-inner {
+        width: min(calc(100% - 32px), var(--max));
+      }
+
+      .topbar {
+        min-height: 64px;
+      }
+
+      .brand-context,
+      .verified-pill {
+        display: none;
+      }
+
+      main {
+        padding-top: 30px;
+      }
+
+      section {
+        padding: 42px 0;
+      }
+
+      .hero {
+        padding-top: 6px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .lede {
+        font-size: 14px;
+      }
+
+      .hero-card,
+      .panel,
+      .definition-card,
+      .spot-card,
+      .source-card {
+        border-radius: 16px;
+      }
+
+      .sim-head,
+      .sim-body,
+      .panel,
+      .definition-card,
+      .spot-card,
+      .source-card {
+        padding: 20px;
+      }
+
+      .fact-strip {
+        grid-template-columns: 1fr;
+        margin-top: 36px;
+      }
+
+      .fact,
+      .fact:first-child,
+      .fact:last-child {
+        min-height: auto;
+        padding: 18px 0;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .fact:last-child {
+        border-bottom: 0;
+      }
+
+      .term-list,
+      .myth-grid,
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .term:nth-child(odd) {
+        border-right: 0;
+      }
+
+      .term:nth-last-child(2) {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .term {
+        min-height: auto;
+      }
+
+      .process-band {
+        padding: 18px;
+      }
+
+      .micro-flow {
+        grid-template-columns: 1fr;
+      }
+
+      .micro-step::after {
+        display: none;
+      }
+
+      .compare-row {
+        grid-template-columns: 0.7fr 1.3fr;
+      }
+
+      .compare-row > div:nth-child(3) {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--line);
+      }
+
+      .compare-row > div:nth-child(2) {
+        border-right: 0;
+      }
+
+      .diagram-frame {
+        padding: 16px;
+      }
+
+      .site-footer-inner {
+        flex-direction: column;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <header class="site-header">
+    <div class="topbar">
+      <div class="brand" aria-label="清算研究">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>清算研究</span>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-context">Market Structure</span>
+      </div>
+      <div class="verified-pill">公开规则核验 · 2026.11.14</div>
+    </div>
+  </header>
+
+  <nav class="section-nav" aria-label="页面目录">
+    <div class="section-nav-inner">
+      <a class="active" href="#overview">全景</a>
+      <a href="#map">概念图谱</a>
+      <a href="#concepts">核心概念</a>
+      <a href="#binance">币安拆解</a>
+      <a href="#insurance">保险基金</a>
+      <a href="#adl">ADL</a>
+      <a href="#spot">现货边界</a>
+      <a href="#sources">核验来源</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <section class="hero" id="overview" data-section="overview">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Crypto clearing / risk transfer</p>
+          <h1>数字货币清算：<br><span>亏损最后由谁接住？</span></h1>
+          <p class="lede">
+            合约不是“赚了再付款”的信用交易，而是先用保证金承担风险。价格不利时，系统从客户权益开始扣钱；权益不够，再依次动用保险基金与 ADL。
+          </p>
+          <div class="hero-meta" aria-label="阅读重点">
+            <span class="chip"><strong>主场景</strong> 永续 / 交割合约</span>
+            <span class="chip"><strong>核验样本</strong> 币安</span>
+            <span class="chip"><strong>关键顺序</strong> 本金 → 基金 → ADL</span>
+          </div>
+        </div>
+
+        <aside class="hero-card" aria-labelledby="sim-title">
+          <div class="sim-head">
+            <div class="sim-label">
+              <span id="sim-title">损失缺口示意图</span>
+              <span>可拖动</span>
+            </div>
+            <div class="sim-loss" aria-live="polite">
+              <span id="loss-value">135</span><small>单位净缺口</small>
+            </div>
+            <div class="range-wrap">
+              <input id="loss-range" type="range" min="0" max="200" value="135" step="5" aria-label="调整示例净缺口">
+            </div>
+            <div class="preset-row" aria-label="示例场景">
+              <button class="preset" type="button" data-loss="60">普通亏损</button>
+              <button class="preset active" type="button" data-loss="135">发生穿仓</button>
+              <button class="preset" type="button" data-loss="190">极端行情</button>
+            </div>
+          </div>
+          <div class="sim-body">
+            <div class="stage-kicker">Current stage</div>
+            <div class="stage-title" id="stage-title" aria-live="polite">保险基金补缺口</div>
+            <p class="stage-copy" id="stage-copy" aria-live="polite">客户权益先承担 100 单位；剩余 35 单位由保险基金承担，目前还不需要 ADL。</p>
+            <div class="split-bars" aria-label="三类资金来源">
+              <div class="split-row client">
+                <span>客户权益</span>
+                <div class="split-track"><div class="split-fill" id="client-bar"></div></div>
+                <span class="split-value" id="client-value">100</span>
+              </div>
+              <div class="split-row fund">
+                <span>保险基金</span>
+                <div class="split-track"><div class="split-fill" id="fund-bar"></div></div>
+                <span class="split-value" id="fund-value">35</span>
+              </div>
+              <div class="split-row adl">
+                <span>ADL</span>
+                <div class="split-track"><div class="split-fill" id="adl-bar"></div></div>
+                <span class="split-value" id="adl-value">0</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="fact-strip" aria-label="三个关键事实">
+        <div class="fact">
+          <strong>先看标记价格</strong>
+          <p>币安说明，强平触发与未实现盈亏使用标记价格；最后一笔成交价用于另一套计算。</p>
+        </div>
+        <div class="fact">
+          <strong>第一单是一笔大 IOC</strong>
+          <p>不是公开文件里的固定“几层甩单”。系统尽量一次成交，未成交部分立即取消。</p>
+        </div>
+        <div class="fact">
+          <strong>ADL 是最后一步</strong>
+          <p>只有在保险基金无法继续接管穿仓仓位时，才会自动平掉部分盈利方的反向仓位。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="map" data-section="map">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">01 / Framework</p>
+          <h2>一张图串起所有概念</h2>
+        </div>
+        <p>先用这张总图建立框架：从价格变化开始，沿着仓位、强平、穿仓、基金与 ADL 一路向下。后面的章节只负责放大其中一段。</p>
+      </div>
+
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1240 420" role="img" aria-labelledby="liquidation-map-title liquidation-map-desc">
+          <title id="liquidation-map-title">数字货币合约清算的五阶段风险传递图</title>
+          <desc id="liquidation-map-desc">图中展示价格与保证金变化导致强平，强平后若客户权益为负形成穿仓，保险基金接管穿仓仓位，基金容量不足时触发 ADL。</desc>
+          <defs>
+            <marker id="liquidation-map-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#777777"></polygon>
+            </marker>
+            <marker id="liquidation-map-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#ff9500"></polygon>
+            </marker>
+          </defs>
+          <rect width="1240" height="420" fill="#111111"></rect>
+
+          <line x1="224" y1="220" x2="264" y2="220" stroke="#777777" stroke-width="1.2" marker-end="url(#liquidation-map-arrow)"></line>
+          <rect x="232" y="188" width="32" height="12" rx="4" fill="#111111"></rect>
+          <text x="248" y="196" fill="#8a8a8a" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">触发</text>
+
+          <line x1="464" y1="220" x2="504" y2="220" stroke="#777777" stroke-width="1.2" marker-end="url(#liquidation-map-arrow)"></line>
+          <rect x="472" y="188" width="32" height="12" rx="4" fill="#111111"></rect>
+          <text x="488" y="196" fill="#8a8a8a" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">卖出</text>
+
+          <line x1="704" y1="220" x2="744" y2="220" stroke="#777777" stroke-width="1.2" marker-end="url(#liquidation-map-arrow)"></line>
+          <rect x="712" y="188" width="32" height="12" rx="4" fill="#111111"></rect>
+          <text x="728" y="196" fill="#8a8a8a" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">不足</text>
+
+          <line x1="944" y1="220" x2="984" y2="220" stroke="#ff9500" stroke-width="1.2" marker-end="url(#liquidation-map-arrow-accent)"></line>
+          <rect x="948" y="188" width="32" height="12" rx="4" fill="#111111"></rect>
+          <text x="964" y="196" fill="#ffb44d" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">耗尽</text>
+
+          <rect x="24" y="160" width="200" height="120" rx="6" fill="#171717" stroke="#4a4a4a" stroke-width="1"></rect>
+          <text x="124" y="192" fill="#777777" font-size="8" font-family="Inter, sans-serif" text-anchor="middle" letter-spacing="1.4">01 / POSITION</text>
+          <text x="124" y="224" fill="#ffffff" font-size="16" font-family="Inter, sans-serif" font-weight="600" text-anchor="middle">价格 × 杠杆</text>
+          <text x="124" y="248" fill="#999999" font-size="12" font-family="Inter, sans-serif" text-anchor="middle">形成浮动盈亏与保证金缺口</text>
+
+          <rect x="264" y="160" width="200" height="120" rx="6" fill="#171717" stroke="#4a4a4a" stroke-width="1"></rect>
+          <text x="364" y="192" fill="#777777" font-size="8" font-family="Inter, sans-serif" text-anchor="middle" letter-spacing="1.4">02 / LIQUIDATION</text>
+          <text x="364" y="224" fill="#ffffff" font-size="16" font-family="Inter, sans-serif" font-weight="600" text-anchor="middle">强平与 IOC 甩单</text>
+          <text x="364" y="248" fill="#999999" font-size="12" font-family="Inter, sans-serif" text-anchor="middle">取消挂单，卖出客户仓位</text>
+
+          <rect x="504" y="160" width="200" height="120" rx="6" fill="#171717" stroke="#4a4a4a" stroke-width="1"></rect>
+          <text x="604" y="192" fill="#777777" font-size="8" font-family="Inter, sans-serif" text-anchor="middle" letter-spacing="1.4">03 / BANKRUPT</text>
+          <text x="604" y="224" fill="#ffffff" font-size="16" font-family="Inter, sans-serif" font-weight="600" text-anchor="middle">穿仓</text>
+          <text x="604" y="248" fill="#999999" font-size="12" font-family="Inter, sans-serif" text-anchor="middle">客户权益处理后仍小于零</text>
+
+          <rect x="744" y="160" width="200" height="120" rx="6" fill="rgba(255,149,0,0.08)" stroke="#ff9500" stroke-width="1"></rect>
+          <text x="844" y="192" fill="#ffb44d" font-size="8" font-family="Inter, sans-serif" text-anchor="middle" letter-spacing="1.4">04 / INSURANCE</text>
+          <text x="844" y="224" fill="#ffffff" font-size="16" font-family="Inter, sans-serif" font-weight="600" text-anchor="middle">保险基金接管</text>
+          <text x="844" y="248" fill="#bdbdbd" font-size="12" font-family="Inter, sans-serif" text-anchor="middle">按类别共享，有接管上限</text>
+
+          <rect x="984" y="160" width="232" height="120" rx="6" fill="rgba(255,85,85,0.08)" stroke="#ff5555" stroke-width="1"></rect>
+          <text x="1100" y="192" fill="#ff8888" font-size="8" font-family="Inter, sans-serif" text-anchor="middle" letter-spacing="1.4">05 / AUTO-DELEVERAGING</text>
+          <text x="1100" y="224" fill="#ffffff" font-size="16" font-family="Inter, sans-serif" font-weight="600" text-anchor="middle">ADL</text>
+          <text x="1100" y="248" fill="#bdbdbd" font-size="12" font-family="Inter, sans-serif" text-anchor="middle">自动平掉盈利方的反向仓位</text>
+
+          <text x="124" y="320" fill="#666666" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">亏损先扣客户权益</text>
+          <text x="364" y="320" fill="#666666" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">尽量成交，不保证价格</text>
+          <text x="604" y="320" fill="#666666" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">负余额风险转给公共池</text>
+          <text x="844" y="320" fill="#666666" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">基金亏损，盈利也归基金</text>
+          <text x="1100" y="320" fill="#666666" font-size="8" font-family="Inter, sans-serif" text-anchor="middle">盈利方承担最后残余风险</text>
+
+          <line x1="24" y1="364" x2="1216" y2="364" stroke="#2b2b2b" stroke-width="0.8"></line>
+          <text x="24" y="388" fill="#777777" font-size="8" font-family="Inter, sans-serif" letter-spacing="1.5">LEGEND</text>
+          <circle cx="112" cy="384" r="3" fill="#777777"></circle>
+          <text x="128" y="388" fill="#777777" font-size="8" font-family="Inter, sans-serif">常规风险传递</text>
+          <circle cx="260" cy="384" r="3" fill="#ff9500"></circle>
+          <text x="272" y="388" fill="#777777" font-size="8" font-family="Inter, sans-serif">公共资金接力</text>
+          <circle cx="396" cy="384" r="3" fill="#ff5555"></circle>
+          <text x="412" y="388" fill="#777777" font-size="8" font-family="Inter, sans-serif">盈利方被动承担</text>
+        </svg>
+        <div class="diagram-caption">
+          <span>先由仓位与账户承担，再向公共资金传递，最后才触及盈利方。</span>
+          <span>规则样本：币安官方公开说明</span>
+        </div>
+      </div>
+
+      <div class="myth-grid">
+        <article class="myth">
+          <span class="myth-label">澄清 01</span>
+          <h3>“99% 都靠卖资产”</h3>
+          <p>方向合理，但没有找到官方统计能证明 99%。更准确的说法是：多数合约风险由保证金和强制减仓处理，信用追偿不是主路径。</p>
+        </article>
+        <article class="myth">
+          <span class="myth-label">澄清 02</span>
+          <h3>保险基金不是保险</h3>
+          <p>币安明确说明它不保证用户收益，也不会把已经发生的客户交易亏损退还。它只处理穿仓造成的对手方缺口。</p>
+        </article>
+        <article class="myth">
+          <span class="myth-label">澄清 03</span>
+          <h3>ADL 不是“所有人一起亏”</h3>
+          <p>ADL 先选反向、盈利、有效杠杆较高的仓位。它是定向自动减仓，不是平均分摊给全市场。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="concepts" data-section="concepts">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">02 / Definitions</p>
+          <h2>先分清四件事</h2>
+        </div>
+        <p>“清算”常被口语化使用。把它拆成账户亏损、强制卖出、穿仓、自动减仓，因果关系会更清楚。</p>
+      </div>
+
+      <div class="definition-grid">
+        <article class="definition-card">
+          <h3>清算不是一种单一动作，而是一串兜底顺序</h3>
+          <p>
+            传统市场把这一步叫 default waterfall。币圈合约交易所也采用类似的“瀑布”：客户权益先吸收亏损，随后是强平成交、保险基金，最后才轮到 ADL。每一步只处理上一步没有覆盖的缺口。
+          </p>
+          <div class="callout">
+            <span class="callout-mark" aria-hidden="true">!</span>
+            <p>
+              “匿名所以无法追偿”是现实因素之一，但更关键的结构是：合约仓位通常已经被保证金预先约束。系统不需要先相信客户未来会还钱，而是先拿账户资产抵亏。
+            </p>
+          </div>
+        </article>
+
+        <div class="term-list panel" style="padding:0">
+          <div class="term">
+            <span class="term-index">01 / PNL</span>
+            <strong>市场亏损</strong>
+            <p>仓位价格变化造成的损失，先由账户保证金承担。此时还可能只是浮亏，并未被强制平仓。</p>
+          </div>
+          <div class="term">
+            <span class="term-index">02 / LIQUIDATION</span>
+            <strong>强制清算</strong>
+            <p>保证金不足时，风险引擎取消挂单并强制减仓或平仓，把风险敞口卖掉。</p>
+          </div>
+          <div class="term">
+            <span class="term-index">03 / BANKRUPT</span>
+            <strong>穿仓</strong>
+            <p>把客户可用资产和仓位处理后，余额仍小于 0，或仓位无法在市场平掉。</p>
+          </div>
+          <div class="term">
+            <span class="term-index">04 / ADL</span>
+            <strong>自动减仓</strong>
+            <p>保险基金也接不住时，系统按优先级自动平掉部分盈利方的反向仓位。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="binance" data-section="binance">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">03 / Binance public rules</p>
+          <h2>币安合约：一笔亏损如何被处理</h2>
+        </div>
+        <p>以下内容以币安在 2026 年 1 月更新的官方说明为核验样本。规则可能调整，交易前应重新查看原文。</p>
+      </div>
+
+      <div class="binance-grid">
+        <article class="panel">
+          <div class="panel-label">A / 触发与计算</div>
+          <h3>强平按“标记价格”触发</h3>
+          <p style="margin-bottom:0;color:var(--muted);font-size:12px">
+            币安官方原文明确：仓位的清算价格和未实现盈亏按 Mark Price 计算。系统在 Mark Price 触达清算价格时触发清算。用户看到的强平价与实际成交价可能不同。
+          </p>
+          <div class="formula">
+            <div><code>可用权益 = 初始保证金 + 已实现盈亏 + 未实现盈亏</code></div>
+            <div style="margin-top:8px">当 <code>可用权益 &lt; 维持保证金</code>，进入清算。</div>
+            <div style="margin-top:12px"><strong>注意：</strong>剧烈波动可能让 Mark Price 一跳越过清算线，实际成交比预设强平价更差。</div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-label">B / 触发后发生什么</div>
+          <ul class="detail-list">
+            <li><b>1</b><span><strong>先取消挂单。</strong>全仓模式取消全账户挂单；逐仓模式取消同一币种仓位的挂单。</span></li>
+            <li><b>2</b><span><strong>发一笔大型 IOC 单。</strong>系统尝试把仓位尽量卖向市场；成交多少算多少，剩余部分立即取消。</span></li>
+            <li><b>3</b><span><strong>检查缺口。</strong>成交后如果客户权益仍足够覆盖维持保证金，清算停止。</span></li>
+            <li><b>4</b><span><strong>剩余仓位变成穿仓仓位。</strong>保险基金在能力范围内接管；损失由基金承担，盈利也归基金。</span></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="process-band">
+        <div class="process-band-head">
+          <strong>“甩单”与账户处理：公开规则能确认到哪里</strong>
+          <span class="source-tag">source: Binance Liquidation Protocols</span>
+        </div>
+        <div class="micro-flow">
+          <div class="micro-step">
+            <em>Origin</em>
+            <strong>从客户仓位发出</strong>
+            <p>强平单先减少客户仓位，不是一开始就把整个账户原样搬给保险基金。</p>
+          </div>
+          <div class="micro-step focal">
+            <em>Execution</em>
+            <strong>一笔大型 IOC</strong>
+            <p>官方只写明“一笔大型立即成交或取消单”，没有公开固定分层数量或单笔上限。</p>
+          </div>
+          <div class="micro-step">
+            <em>Residual</em>
+            <strong>剩余部分变穿仓</strong>
+            <p>IOC 未成交部分被取消后，交由风险引擎和保险基金处理。</p>
+          </div>
+          <div class="micro-step">
+            <em>Takeover</em>
+            <strong>基金接管仓位</strong>
+            <p>基金按破产价格接管，承担后续亏损；不是对客户交易亏损进行报销。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:16px">
+        <span class="callout-mark" aria-hidden="true">✓</span>
+        <p>
+          <strong style="color:#ffffff">关于“分层甩单”的结论：</strong>币安公开文件描述的是单笔大型 IOC，而不是公开写明的固定多层分批。可能在底层风险系统里有更细的执行控制，但没有公开一手材料，不应把“分几层、每层多少”当作已知事实。
+        </p>
+      </div>
+    </section>
+
+    <section id="insurance" data-section="insurance">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">04 / Insurance fund</p>
+          <h2>保险基金：池子不是“每个合约一个”</h2>
+        </div>
+        <p>币安按合约类别维护多个基金，每个基金可能分布在多个钱包中。不同 USDT 合约不一定共享同一个池。</p>
+      </div>
+
+      <div class="fund-grid">
+        <article class="panel fund-intro">
+          <div>
+            <div class="panel-label">What it actually does</div>
+            <div class="fund-number">补差额<small>不是存款保险，也不退还客户交易亏损</small></div>
+            <p style="color:var(--muted);font-size:12px;line-height:1.8">
+              基金只在保险基金接管“穿仓仓位”时，承担破产价格与清算成交之间的差额。基金来自清算费的一部分、交易所补充资金，以及接管仓位后可能产生的盈利。
+            </p>
+          </div>
+          <a class="fund-link" href="https://www.binance.com/en/futures/funding-history/perpetual/insurance-fund-history" target="_blank" rel="noreferrer">
+            查看币安保险基金历史
+            <span aria-hidden="true">↗</span>
+          </a>
+        </article>
+
+        <article class="panel">
+          <div class="panel-label">Current public grouping / USDⓈ-M & COIN-M</div>
+          <div class="fund-map">
+            <div class="fund-family">
+              <div class="fund-family-head">
+                <strong>USDⓈ-M · 核心池</strong>
+                <span>共享 1 个基金</span>
+              </div>
+              <div class="pool">
+                <span class="focus">BTC USDT</span>
+                <span class="focus">ETH USDT</span>
+                <span class="focus">BNB USDT</span>
+              </div>
+            </div>
+            <div class="fund-family">
+              <div class="fund-family-head">
+                <strong>USDⓈ-M · 主流币组</strong>
+                <span>共享 1 个基金</span>
+              </div>
+              <div class="pool">
+                <span>DOT</span><span>LINK</span><span>XMR</span><span>ADA</span>
+                <span>BCH</span><span>EOS</span><span>ETC</span><span>LTC</span>
+                <span>TRX</span><span>XLM</span><span>XRP</span>
+              </div>
+            </div>
+            <div class="fund-family">
+              <div class="fund-family-head">
+                <strong>USDⓈ-M · USDC 组</strong>
+                <span>共享 1 个基金</span>
+              </div>
+              <div class="pool"><span>USDC-margined contracts</span></div>
+            </div>
+            <div class="fund-family">
+              <div class="fund-family-head">
+                <strong>其他 USDT 合约 / COIN-M</strong>
+                <span>按官网分组</span>
+              </div>
+              <div class="pool">
+                <span>其他 USDT 合约：另有基金组</span>
+                <span>COIN-M：同一抵押币种共享一池</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="callout" style="margin-top:16px">
+        <span class="callout-mark" aria-hidden="true">i</span>
+        <p>
+          基金会设置“最大接管容量”，定义为基金余额的某个倍数；倍数因风险管理原因不公开。达到上限后，风险引擎不能再继续吃下穿仓仓位，ADL 才会被触发。官方用 99.9% 置信区间和历史极端情景校准最低基金规模，但这不代表 99.9% 的清算都不会触发 ADL。币安也可能调整合约所属基金组，因此交易前应看官网当前分组，而不是记死一张旧表。
+        </p>
+      </div>
+    </section>
+
+    <section id="adl" data-section="adl">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">05 / Auto-deleveraging</p>
+          <h2>ADL：从盈利方反向平仓</h2>
+        </div>
+        <p>它是最后防线，不是日常强平。系统需要找方向相反的盈利仓位，优先自动减掉“盈利更多、杠杆更高”的仓位。</p>
+      </div>
+
+      <div class="adl-grid">
+        <article class="panel">
+          <div class="panel-label">排名公式 / Binance public formula</div>
+          <h3>先算盈利比例，再乘或除有效杠杆</h3>
+          <div class="adl-formulas">
+            <div class="formula-row">
+              <b>STEP 1</b>
+              <code>盈亏比例 = 未实现盈亏 / |仓位名义价值|</code>
+            </div>
+            <div class="formula-row">
+              <b>STEP 2</b>
+              <code>有效杠杆 = |仓位名义价值| / (账户余额 + 未实现盈亏)</code>
+            </div>
+            <div class="formula-row">
+              <b>STEP 3</b>
+              <code>若盈亏比例 ≥ 0：排名值 = 盈亏比例 × 有效杠杆</code>
+            </div>
+            <div class="formula-row">
+              <b>STEP 4</b>
+              <code>若盈亏比例 &lt; 0：排名值 = 盈亏比例 / 有效杠杆</code>
+            </div>
+            <div class="formula-row">
+              <b>STEP 5</b>
+              <code>ADL Quantile = 用户排名 / 用户总数</code>
+            </div>
+          </div>
+          <p style="margin:14px 0 0;color:var(--soft);font-size:10px;line-height:1.7">
+            组合保证金模式下，有效杠杆按账户权益计算：|仓位名义价值| / accountEquity。
+          </p>
+        </article>
+
+        <article class="panel adl-result">
+          <div>
+            <div class="panel-label">Priority reading</div>
+            <h3>越靠前，越先被自动平仓</h3>
+            <p style="color:var(--muted);font-size:12px;line-height:1.75">
+              盈利比例和有效杠杆共同决定排序。界面上的 ADL 指示灯对应仓位在队列中的分位；灯越满，被自动减仓的概率越高。Delta Neutral 账户达到阈值时，其已对冲仓位会排在更后。
+            </p>
+            <div class="quantile" aria-label="ADL 五档指示灯示意">
+              <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+            </div>
+            <div class="quantile-labels"><span>低概率</span><span>高概率</span></div>
+          </div>
+          <div class="adl-explain">
+            <p><strong style="color:#ffffff">执行价格：</strong>盈利方仓位按亏损方的破产价格关闭。</p>
+            <p><strong style="color:#ffffff">交易费用：</strong>官方说明，被 ADL 的盈利方不收取交易费。</p>
+            <p><strong style="color:#ffffff">通知与结果：</strong>系统通知被平仓数量与价格；盈利可能被部分减少或全部抹平。</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="spot" data-section="spot">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">06 / Spot boundary</p>
+          <h2>现货为什么通常没有这套 ADL 瀑布？</h2>
+        </div>
+        <p>普通现货是一手交钱、一手交货。真正需要“卖出资产还债”的场景，通常来自现货借贷、杠杆或平台自身风险。</p>
+      </div>
+
+      <div class="comparison">
+        <article class="spot-card">
+          <div class="panel-label">Plain-language boundary</div>
+          <h3>普通现货：交易完成，信用关系结束</h3>
+          <p>
+            买方先有资产才买入，卖方成交后交付资产。只要平台完成账本结算，双方没有持续的保证金义务，也就不需要保险基金去补一个“合约对手利润”。
+          </p>
+          <div class="spot-rule">
+            <div><strong>普通现货</strong><span>没有杠杆，就没有强制平仓瀑布。</span></div>
+            <div><strong>现货杠杆 / 借贷</strong><span>借来的钱或币需要偿还，抵押物下跌时会自动卖出。</span></div>
+            <div><strong>平台破产或挪用</strong><span>属于信用、托管和偿付能力问题，不是 ADL 能解决的交易风险。</span></div>
+          </div>
+        </article>
+
+        <div class="compare-table" aria-label="传统金融与加密合约风险处理对比">
+          <div class="compare-row header">
+            <div>维度</div>
+            <div>传统集中清算</div>
+            <div>典型加密永续交易所</div>
+          </div>
+          <div class="compare-row">
+            <div>客户身份</div>
+            <div>KYC、经纪关系、法律追偿路径更成熟。</div>
+            <div>大型交易所通常也有 KYC；匿名钱包与跨境追偿仍提高实际成本。</div>
+          </div>
+          <div class="compare-row">
+            <div>风险前置</div>
+            <div>保证金、保证金追加、会员资本与违约基金。</div>
+            <div>保证金、风险限额、标记价格、保险基金。</div>
+          </div>
+          <div class="compare-row">
+            <div>最后兜底</div>
+            <div>违约瀑布、共同分担、头寸拍卖或有序清算。</div>
+            <div>保险基金能力耗尽后，直接对反向盈利仓位执行 ADL。</div>
+          </div>
+          <div class="compare-row">
+            <div>结算速度</div>
+            <div>受结算周期、参与机构和法律程序影响。</div>
+            <div>账本和风控由平台实时执行，速度快，但更依赖平台治理。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources" data-section="sources">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">07 / Verification</p>
+          <h2>哪些已证实，哪些不能写成事实</h2>
+        </div>
+        <p>核验日期为 2026 年 11 月 14 日。页面优先采用币安官方 FAQ、保险基金数据页及规则入口。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>待核验说法</th>
+              <th>结论</th>
+              <th>公开依据 / 边界</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>合约按标记价格触发强平</td>
+              <td><span class="status ok">已证实</span></td>
+              <td>币安 Liquidation Protocols：清算价格和未实现盈亏按 Mark Price 计算。</td>
+            </tr>
+            <tr>
+              <td>强平先取消挂单，再发大型 IOC</td>
+              <td><span class="status ok">已证实</span></td>
+              <td>官方说明为单笔大型 Immediate or Cancel order；成交尽量多，余量立即取消。</td>
+            </tr>
+            <tr>
+              <td>币安会固定分几层甩单，每层有数量上限</td>
+              <td><span class="status unknown">未证实</span></td>
+              <td>公开文件没有给出固定层数或每层限额，不能从“底层可能有风控”推断成公开规则。</td>
+            </tr>
+            <tr>
+              <td>强平从客户仓位执行，穿仓部分再被接管</td>
+              <td><span class="status ok">已证实</span></td>
+              <td>IOC 未成交余额成为穿仓仓位；基金按破产价格接管，并非一开始直接接管整个账户。</td>
+            </tr>
+            <tr>
+              <td>保险基金按交易工具逐一隔离</td>
+              <td><span class="status nuance">不准确</span></td>
+              <td>币安按合约类别分池。BTC、ETH、BNB 的 USDT 合约共享一池；COIN-M 同一抵押币种共享一池。</td>
+            </tr>
+            <tr>
+              <td>保险基金余额可在公开页面查看</td>
+              <td><span class="status ok">已证实</span></td>
+              <td>币安提供 Insurance Fund History 页面，可查看 USDⓈ-M 与 COIN-M 基金历史。</td>
+            </tr>
+            <tr>
+              <td>ADL 按盈利与有效杠杆排序</td>
+              <td><span class="status ok">已证实</span></td>
+              <td>官方给出 PNL Percentage × Effective Leverage 的排名公式及分位计算。</td>
+            </tr>
+            <tr>
+              <td>99% 的币圈清算都通过卖资产完成</td>
+              <td><span class="status unknown">无公开数据</span></td>
+              <td>没有找到大交易所公开的行业级比例。作为方向性经验可以理解，不能作为严格统计结论。</td>
+            </tr>
+            <tr>
+              <td>匿名导致无法追偿，是币圈清算的主要原因</td>
+              <td><span class="status nuance">有前提</span></td>
+              <td>大型 CEX 通常有 KYC，但跨境与链上身份仍提高追偿难度。更根本的是合约风险通常已被保证金预约束。</td>
+            </tr>
+            <tr>
+              <td>普通现货也走保证金、保险基金、ADL 瀑布</td>
+              <td><span class="status nuance">通常不成立</span></td>
+              <td>普通现货是预先付款和交付；现货借贷或杠杆才更接近“卖抵押物还债”，但没有永续合约的对手方盈利兑付链。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="source-grid">
+        <a class="source-card" href="https://www.binance.com/en/support/faq/detail/360033525271" target="_blank" rel="noreferrer">
+          <div>
+            <div class="source-top"><span>Official FAQ</span><span>Updated 2026-01-04</span></div>
+            <h3>Binance Futures Liquidation Protocols</h3>
+            <p>标记价格、强平条件、IOC 甩单、穿仓、保险基金接管与负余额处理。</p>
+          </div>
+          <div class="source-link-line"><span>查看一手来源</span><span aria-hidden="true">↗</span></div>
+        </a>
+        <a class="source-card" href="https://www.binance.com/en/support/faq/detail/360033525371" target="_blank" rel="noreferrer">
+          <div>
+            <div class="source-top"><span>Official FAQ</span><span>Updated 2026-01-04</span></div>
+            <h3>Introduction to Futures Insurance Funds</h3>
+            <p>基金用途、资金来源、最低规模、最大接管容量、共享分组与公开数据入口。</p>
+          </div>
+          <div class="source-link-line"><span>查看一手来源</span><span aria-hidden="true">↗</span></div>
+        </a>
+        <a class="source-card" href="https://www.binance.com/en/support/faq/detail/360033525471" target="_blank" rel="noreferrer">
+          <div>
+            <div class="source-top"><span>Official FAQ</span><span>Updated 2026-01-13</span></div>
+            <h3>What Is Auto-Deleveraging (ADL)?</h3>
+            <p>ADL 触发条件、排名公式、分位、破产价格执行与盈利方费用说明。</p>
+          </div>
+          <div class="source-link-line"><span>查看一手来源</span><span aria-hidden="true">↗</span></div>
+        </a>
+        <a class="source-card" href="https://www.binance.com/en/futures/funding-history/perpetual/insurance-fund-history" target="_blank" rel="noreferrer">
+          <div>
+            <div class="source-top"><span>Live data</span><span>Public page</span></div>
+            <h3>Insurance Fund History</h3>
+            <p>查看币安当前公开的 USDⓈ-M 与 COIN-M 保险基金余额和历史数据。</p>
+          </div>
+          <div class="source-link-line"><span>打开公开数据页</span><span aria-hidden="true">↗</span></div>
+        </a>
+      </div>
+
+      <div class="footnote">
+        说明：本页是机制科普，不是交易所规则原文的替代品，也不构成投资建议。页面中的“135 单位损失”等数字仅用于解释风险传递，不映射任何真实合约参数。交易所可能调整基金分组、费率、风险限额和接管容量；实际交易前请重新查看对应产品的官方规则。
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>
+        清算研究 · 数字货币清算专题。用一条资金瀑布解释强平、穿仓、保险基金与 ADL，并将可验证事实和行业经验分开呈现。
+      </p>
+      <div class="footer-mark"><span class="brand-mark" aria-hidden="true"></span><span>清算研究</span></div>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      const range = document.querySelector("#loss-range");
+      const lossValue = document.querySelector("#loss-value");
+      const stageTitle = document.querySelector("#stage-title");
+      const stageCopy = document.querySelector("#stage-copy");
+      const clientBar = document.querySelector("#client-bar");
+      const fundBar = document.querySelector("#fund-bar");
+      const adlBar = document.querySelector("#adl-bar");
+      const clientValue = document.querySelector("#client-value");
+      const fundValue = document.querySelector("#fund-value");
+      const adlValue = document.querySelector("#adl-value");
+      const presets = [...document.querySelectorAll(".preset")];
+      const navLinks = [...document.querySelectorAll(".section-nav a")];
+      const sections = [...document.querySelectorAll("main section[data-section]")];
+      const marginCapacity = 100;
+      const fundCapacity = 60;
+      const maxLoss = 200;
+
+      function renderSimulation() {
+        const loss = Number(range.value);
+        const client = Math.min(loss, marginCapacity);
+        const fund = Math.min(Math.max(loss - marginCapacity, 0), fundCapacity);
+        const adl = Math.max(loss - marginCapacity - fundCapacity, 0);
+
+        lossValue.textContent = String(loss);
+        clientValue.textContent = String(client);
+        fundValue.textContent = String(fund);
+        adlValue.textContent = String(adl);
+
+        clientBar.style.width = `${(client / maxLoss) * 100}%`;
+        fundBar.style.width = `${(fund / maxLoss) * 100}%`;
+        adlBar.style.width = `${(adl / maxLoss) * 100}%`;
+        range.style.setProperty("--range-progress", `${(loss / maxLoss) * 100}%`);
+
+        if (loss <= marginCapacity) {
+          stageTitle.textContent = "客户权益完全吸收";
+          stageCopy.textContent = `净缺口为 ${loss} 单位，没有超过示例客户权益 100 单位。保险基金与 ADL 都不需要出场。`;
+        } else if (loss <= marginCapacity + fundCapacity) {
+          stageTitle.textContent = "保险基金补缺口";
+          stageCopy.textContent = `客户权益先承担 100 单位；净缺口还剩 ${loss - marginCapacity} 单位，由示例保险基金承担，目前还不需要 ADL。`;
+        } else {
+          stageTitle.textContent = "ADL 吸收最后残差";
+          stageCopy.textContent = `客户权益承担 100 单位，保险基金承担 60 单位，最后 ${loss - marginCapacity - fundCapacity} 单位净缺口通过示例 ADL 转给盈利方。`;
+        }
+
+        presets.forEach((button) => {
+          button.classList.toggle("active", Number(button.dataset.loss) === loss);
+        });
+      }
+
+      range.addEventListener("input", renderSimulation);
+      presets.forEach((button) => {
+        button.addEventListener("click", () => {
+          range.value = button.dataset.loss;
+          renderSimulation();
+        });
+      });
+
+      function activateNav(sectionId) {
+        navLinks.forEach((link) => {
+          link.classList.toggle("active", link.getAttribute("href") === `#${sectionId}`);
+        });
+      }
+
+      let activeFrame = 0;
+      function syncActiveFromScroll() {
+        activeFrame = 0;
+        const marker = window.scrollY + Math.min(window.innerHeight * 0.28, 220);
+        let current = sections[0];
+
+        sections.forEach((section) => {
+          if (section.offsetTop <= marker) current = section;
+        });
+
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8) {
+          current = sections[sections.length - 1];
+        }
+
+        activateNav(current.dataset.section);
+      }
+
+      window.addEventListener("scroll", () => {
+        if (!activeFrame) activeFrame = requestAnimationFrame(syncActiveFromScroll);
+      }, { passive: true });
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          activateNav(link.getAttribute("href").slice(1));
+        });
+      });
+
+      renderSimulation();
+      syncActiveFromScroll();
+    })();
+  </script>
+</body>
+</html>
